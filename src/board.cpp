@@ -179,6 +179,11 @@ std::vector<std::pair<int,int>> generateMoves(char board[][BOARD_DIM], __uint128
       low &= low-1; //clear that set bit
       possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros));
     }
+    while (high){
+      int trailing_zeros = __builtin_ctzll(high);
+      high &= high-1;
+      possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros+64));//add 64 for high address
+    }
   }
 
   return possibleMoves;
