@@ -3,9 +3,9 @@
 #include <random>
 #include <cstdint>
 
-extern std::uint64_t pieceHashValue[PLAYER_AMOUNT][BOARD_DIM][BOARD_DIM];
+std::uint64_t pieceHashValue[PLAYER_AMOUNT][BOARD_DIM][BOARD_DIM];
 
-extern std::uint64_t playerHashValue[PLAYER_AMOUNT];
+std::uint64_t playerHashValue[PLAYER_AMOUNT];
 
 namespace Hash{
   void initPlayerVals(std::uint64_t playerValArr[PLAYER_AMOUNT]){
