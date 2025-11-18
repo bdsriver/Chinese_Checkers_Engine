@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <stdio.h>
 
 
 //must call setMovesAndJumps() to initiallize this
@@ -171,6 +172,27 @@ void copyBoard(char original[][BOARD_DIM], char copy[][BOARD_DIM]){
   }
 }
 
+void printBoard(char board[][17]) {
+  for (int i = 0; i < 17; i++) {
+    for (int j = 0; j < 17; j++) {
+      if (inBounds[i][j]) {
+        if (board[i][j] >= '0' && board[i][j] <= '9') {
+            printf("[%c]", board[i][j]);
+        } 
+        else if (board[i][j] >= 0 && board[i][j] <= 9) {
+            printf("[%d]", board[i][j]);
+        } 
+        else {
+            printf("[ ]");
+        }
+      } else {
+          printf("   ");
+      }
+    }
+    printf("\n");
+  }
+}
+
 std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<int> pieces){
   std::vector<std::pair<int,int>> possibleMoves;
 
@@ -291,3 +313,12 @@ __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
   return bitboard;
 }
 
+int main() {
+  setMovesAndJumps();
+  char testBoard[BOARD_DIM][BOARD_DIM];
+  copyBoard(startBoard, testBoard);
+  printBoard(testBoard);
+
+  return 0;
+
+}
