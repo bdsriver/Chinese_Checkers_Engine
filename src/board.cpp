@@ -2,15 +2,17 @@
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
+#include <functional>
 
 
 //must call setMovesAndJumps() to initiallize this
 //key: position(0-121) value: bitboard (set to 1 at valid move location)
-std::unordered_map<int, __uint128_t> moves;
+std::vector<__uint128_t> moves;
 
 //must call setMovesAndJumps() to initiallize this
 //key: position(0-121) value: bitboard (set to 1 at valid jump location)
-std::unordered_map<int, __uint128_t> jumps;
+std::vector<__uint128_t> jumps;
+std::vector<std::unordered_map<int,int>> halfJumps;
 
 
 // '<int>' is the player's pieces
@@ -34,7 +36,6 @@ char startBoard[BOARD_DIM][BOARD_DIM] = {
   {' ',' ',' ',' ', 3 , 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
   {' ',' ',' ',' ', 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}
 };
-
 
 bool inBounds[BOARD_DIM][BOARD_DIM] = {
   {false,false,false,false,false,false,false,false,false,false,false,false,true ,false,false,false,false},
@@ -104,7 +105,7 @@ std::unordered_map <int, std::pair<int,int>> bitToIndices = {
 //refer to diagram for mapping explanation
 void setMovesAndJumps(){
   auto isInBounds = [](int x, int y) -> bool {
-    return x>=0 && y>=0 && x<BOARD_DIM && y<BOARD_DIM && inBounds[x][y];
+    return x>=0 && y>=0 && x<BOARD_DIM && y<BOARD_DIM && inBounds[y][x];
   };
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
     return (n | ((__uint128_t)1 << bit));
@@ -117,9 +118,10 @@ void setMovesAndJumps(){
   int indicesToBit[BOARD_DIM][BOARD_DIM];
   for (int i=0; i<SPACE_AMOUNT; i++){
     std::pair<int, int> p = bitToIndices[i];
-    indicesToBit[p.first][p.second] = i;
+    indicesToBit[p.second][p.first] = i;
   }
   
+  halfJumps.resize(SPACE_AMOUNT);
   //for every space, map out the moves and jumps you can make from there
   for (int i=0;i<SPACE_AMOUNT;i++){
     std::pair<int, int> p = bitToIndices[i];
@@ -130,13 +132,17 @@ void setMovesAndJumps(){
       int newX = x+moveDirs[j][0];
       int newY = y+moveDirs[j][1];
       if (isInBounds(newX, newY)){
-        moves_possible.push_back(indicesToBit[newX][newY]);
+        moves_possible.push_back(indicesToBit[newY][newX]);
       }
 
       newX = x+jumpDirs[j][0];
       newY = y+jumpDirs[j][1];
+      int hx = x+(jumpDirs[j][0]/2);
+      int hy = y+(jumpDirs[j][1]/2);
       if (isInBounds(newX, newY)){
-        jumps_possible.push_back(indicesToBit[newX][newY]);
+        int jumpLanding = indicesToBit[newY][newX];
+        jumps_possible.push_back(jumpLanding);
+        halfJumps[i][jumpLanding] = indicesToBit[hy][hx];
       }
     }
     //now that jumps and moves have the squares you can go to from square i,
@@ -145,13 +151,13 @@ void setMovesAndJumps(){
     for (auto m:moves_possible){
       bitboard = setBit(bitboard,m);
     }
-    moves[i] = bitboard;
+    moves.push_back(bitboard);
 
     __uint128_t bitboard2 = 0;
     for (auto j:jumps_possible){
       bitboard2 = setBit(bitboard2,j);
     }
-    jumps[i] = bitboard2;
+    jumps.push_back(bitboard2);
 
   }
 
@@ -160,37 +166,23 @@ void setMovesAndJumps(){
 void copyBoard(char original[][BOARD_DIM], char copy[][BOARD_DIM]){
   for (int i=0; i<BOARD_DIM; i++){
     for (int j=0; j<BOARD_DIM; j++){
-      copy[i][j] = original[i][j];
+      copy[j][i] = original[j][i];
     }
   }
 }
 
-#include <stdio.h>
-
-void printBoard(char board[][17]) {
-  for (int i = 0; i < 17; i++) {
-    for (int j = 0; j < 17; j++) {
-      if (inBounds[i][j]) {
-        if (board[i][j] >= '0' && board[i][j] <= '9') {
-            printf("[%c]", board[i][j]);
-        } 
-        else if (board[i][j] >= 0 && board[i][j] <= 9) {
-            printf("[%d]", board[i][j]);
-        } 
-        else {
-            printf("[ ]");
-        }
-      } else {
-          printf("   ");
-      }
-    }
-    printf("\n");
-  }
-}
-
-
-std::vector<std::pair<int,int>> generateMoves(char board[][BOARD_DIM], __uint128_t occupied, std::vector<int> pieces){
+std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<int> pieces){
   std::vector<std::pair<int,int>> possibleMoves;
+
+  auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
+    return (n | ((__uint128_t)1 << bit));
+  };
+  auto unsetBit = [](__uint128_t n, int bit) -> __uint128_t {
+    return (n & (~((__uint128_t)1 << bit)));
+  };
+  auto bitIsSet = [](__uint128_t n, int bit) -> bool {
+    return (n & ((__uint128_t)1 << bit) ) ;
+  };
   
   //Generate one-space moves
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
@@ -211,6 +203,52 @@ std::vector<std::pair<int,int>> generateMoves(char board[][BOARD_DIM], __uint128
     }
   }
 
+  //Generate jumps with DFS
+  for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
+    //start with a point to jump from being your current spot and add new points
+    std::vector<int> jumpPoints = {pieces[i]};
+    // "hashmap" to check if we already jumped to a spot
+    __uint128_t jumpedTo = 0;
+
+
+    std::function<void()> DFS = [&]() -> void {
+      if (jumpPoints.empty()){
+        return;
+      }
+      int startSpace = jumpPoints.back();
+      jumpPoints.pop_back();
+      //set the hash
+      jumpedTo = setBit(jumpedTo,startSpace);
+
+      //add all possible jumps to stack
+      //first compute jumps and then check if their intermediate space is occupied to verify
+      __uint128_t pieceJumps = jumps[startSpace] & (~occupied);
+      uint64_t low = (uint64_t)pieceJumps;
+      uint64_t high = (uint64_t)(pieceJumps >> 64);
+      while (low){
+        int trailing_zeros = __builtin_ctzll(low);
+        low &= low-1;
+        if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros])  && bitIsSet(~jumpedTo,trailing_zeros)){
+          possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros));
+          jumpPoints.push_back(trailing_zeros);
+        }        
+      }
+      while (high){
+        int trailing_zeros = __builtin_ctzll(high) + 64;//add 64 for high address
+        high &= high-1;
+        //check that there is a piece to jump over && we have not visited the landing space on our search
+        if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros]) && bitIsSet(~jumpedTo,trailing_zeros)){
+          possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros));
+          jumpPoints.push_back(trailing_zeros);
+        }
+      }
+      DFS();
+    };//end DFS definition
+
+    DFS();
+  }//end iteration i
+
+
   return possibleMoves;
 }
 
@@ -219,13 +257,13 @@ std::vector<int> initPieces(char board[][BOARD_DIM], char playerID){
   int indicesToBit[BOARD_DIM][BOARD_DIM];
   for (int i=0; i<SPACE_AMOUNT; i++){
     std::pair<int, int> p = bitToIndices[i];
-    indicesToBit[p.first][p.second] = i;
+    indicesToBit[p.second][p.first] = i;
   }
 
   std::vector<int> pieceMapping;
   for (int i=0; i<BOARD_DIM; i++){
     for (int j=0; j<BOARD_DIM; j++){
-      if (board[i][j] == playerID){
+      if (board[j][i] == playerID){
         pieceMapping.push_back(indicesToBit[j][i]);
       }
     }
@@ -238,7 +276,7 @@ __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
     return (n | ((__uint128_t)1 << bit));
   };
   auto isInBounds = [](int x, int y) -> bool {
-    return x>=0 && y>=0 && x<BOARD_DIM && y<BOARD_DIM && inBounds[x][y];
+    return x>=0 && y>=0 && x<BOARD_DIM && y<BOARD_DIM && inBounds[y][x];
   };
 
   __uint128_t bitboard = 0;
@@ -246,20 +284,10 @@ __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
     std::pair<int,int> p = bitToIndices[i];
     int x = p.first;
     int y = p.second;
-    if (isInBounds(x,y) && board[x][y] != ' '){
+    if (isInBounds(x,y) && board[y][x] != ' '){
       bitboard = setBit(bitboard,i);
     }
   }
   return bitboard;
-}
-
-int main() {
-  setMovesAndJumps();
-  char testBoard[BOARD_DIM][BOARD_DIM];
-  copyBoard(startBoard, testBoard);
-  printBoard(testBoard);
-
-  return 0;
-
 }
 
