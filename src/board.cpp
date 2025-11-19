@@ -317,3 +317,20 @@ __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
   return occupied;
 }
 
+void makeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
+  //unset the start space and set the end space. change piecePos to new position
+  *piecePos = move.second;
+  //set the new space bit
+  *occupied = (*occupied) | ((__uint128_t)1 << move.second);
+  //unset the old space bit
+  *occupied = (*occupied) & (~((__uint128_t)1 << move.first));
+}
+
+void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
+  //unset the end space and set the start space. change piecePos to old position
+  *piecePos = move.first;
+  //set the old space bit
+  *occupied = (*occupied) | ((__uint128_t)1 << move.first);
+  //unset the new space bit
+  *occupied = (*occupied) & (~(__uint128_t)1 << move.second);
+}

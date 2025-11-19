@@ -37,3 +37,9 @@ std::vector<int> initPieces(char board[][BOARD_DIM], char playerID);
 
 // return the bitboard that represents if a piece is at each space
 __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]);
+
+// change the "occipied" bitboard and piece pos to represent the new position
+void makeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos);
+
+//change the "occupied" bitboard and piece pos back after calling makeMove() and exploring tree
+void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos);
