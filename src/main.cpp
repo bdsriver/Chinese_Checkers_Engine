@@ -22,6 +22,6 @@ int main(){
   int myPiece = 111;
   makeMove(&occupied,myMoves[0],&myPiece);
   unMakeMove(&occupied,myMoves[0],&myPiece);
-  int i=0;
+  
 
 }

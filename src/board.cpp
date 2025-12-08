@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <functional>
 #include <stdio.h>
+#include <deque>
 
 
 //must call setMovesAndJumps() to initiallize this
@@ -14,6 +15,9 @@ std::vector<__uint128_t> moves;
 //key: position(0-121) value: bitboard (set to 1 at valid jump location)
 std::vector<__uint128_t> jumps;
 std::vector<std::unordered_map<int,int>> halfJumps;
+//initiallized in setMovesAndJumps()
+std::vector<std::vector<float>> pieceValues;
+std::vector<std::vector<int>> startPoints;
 
 
 // '<int>' is the player's pieces
@@ -36,6 +40,16 @@ char startBoard[BOARD_DIM][BOARD_DIM] = {
   {' ',' ',' ',' ', 3 , 3 , 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
   {' ',' ',' ',' ', 3 , 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
   {' ',' ',' ',' ', 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}
+};
+
+//changed during runtime
+std::vector<std::vector<int>> endZones = {
+  {6,7,8,9,0,1,2,3,4,5},
+  {13,25,36,46,10,11,12,23,24,35},
+  {65,76,88,101,75,86,87,98,99,100},
+  {111,112,113,114,115,116,117,118,119,120},
+  {74,84,95,107,85,96,97,108,109,110},
+  {19,32,44,55,20,21,22,33,34,45}
 };
 
 bool inBounds[BOARD_DIM][BOARD_DIM] = {
@@ -160,6 +174,74 @@ void setMovesAndJumps(){
     }
     jumps.push_back(bitboard2);
 
+  }
+
+  if (PLAYER_AMOUNT == 6){
+    startPoints = endZones;
+    std::vector<std::vector<int>> temp = endZones;
+    endZones[0] = temp[3];
+    endZones[1] = temp[4];
+    endZones[2] = temp[5];
+    endZones[3] = temp[0];
+    endZones[4] = temp[1];
+    endZones[5] = temp[2];
+  }
+
+  //use djikstra's to set piece table by measuring distance from end
+  // we start with all spaces unexplored and set to max value except the starting spaces
+  // we can use a normal queue instead of priority queue because there is 1 unit between each adjacent space
+  std::vector<std::deque<int>> queue;
+  std::vector<__uint128_t> explored;
+  for (int i=0;i<PLAYER_AMOUNT;i++){
+    pieceValues.push_back({});
+    for (int j=0; j<SPACE_AMOUNT; j++){
+      pieceValues[i].push_back(248);
+    }
+    explored.push_back(0);
+    queue.push_back({});    
+    for (int j=0; j<10; j++){
+      explored[i] = setBit(explored[i], endZones[i][j]);
+      pieceValues[i][endZones[i][j]] = 0;
+      if (j<4){
+        queue[i].push_back(endZones[i][j]);
+      }
+    }
+  }
+  //pop front of the queue, get all moves from that space that haven't been explored yet,
+  //add 
+  auto djikstra = [&](int player) -> void {
+    while (queue[player].size() > 0){
+      int u = queue[player].front();
+      queue[player].pop_front();
+      
+      std::vector<int> edges = {};
+
+      //split 128 bit int into two 64 bit ints
+      __uint128_t pieceMoves = (~explored[player]) & moves[u];
+      uint64_t low = (uint64_t)pieceMoves;
+      uint64_t high = (uint64_t)(pieceMoves >> 64);
+      while (low){
+        int trailing_zeros = __builtin_ctzll(low);//supported by gcc
+        low &= low-1; //clear that set bit
+        edges.push_back(trailing_zeros);
+      }
+      while (high){
+        int trailing_zeros = __builtin_ctzll(high)+64;//add 64 for high address
+        high &= high-1;
+        edges.push_back(trailing_zeros);
+      }
+      //add all unexplored moves from here to queue 
+      for (int v:edges){
+        if(pieceValues[player][u]+1 < pieceValues[player][v]){
+          pieceValues[player][v] = pieceValues[player][u] + 1;
+          queue[player].push_back(v);
+        }
+      }
+    }
+  };//end djikstra definition
+  
+  for (int i=0; i<PLAYER_AMOUNT; i++){
+    djikstra(i);
   }
 
 }

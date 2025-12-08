@@ -19,9 +19,18 @@ extern std::vector<__uint128_t> moves;
 extern std::vector<__uint128_t> jumps;
 //mapping of the location of the end of the jump to the location of the intermediate space
 extern std::vector<std::unordered_map<int,int>> halfJumps;
+//piece table value per space
+extern std::vector<std::vector<float>> pieceValues;
+extern std::vector<std::vector<int>> startPoints;
+
+//the 10 goal spots for each start player
+//0: start:0-9, end:111-120 
+// see diagram
+// "front" of the end zone spaces are the first 4 ints of each vector
+extern std::vector<std::vector<int>> endZones;
 
 //refer to diagram for mapping explanation
-//must be called to set the global moves and jumps tables
+//must be called to set the global moves,pieces, and jumps tables
 void setMovesAndJumps();
 
 //copy the original onto the copy
