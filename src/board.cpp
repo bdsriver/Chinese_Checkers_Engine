@@ -416,3 +416,17 @@ void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
   //unset the new space bit
   *occupied = (*occupied) & (~(__uint128_t)1 << move.second);
 }
+
+void makeMove(__uint128_t *occupied, std::pair<int,int> move){
+  //set the new space bit
+  *occupied = (*occupied) | ((__uint128_t)1 << move.second);
+  //unset the old space bit
+  *occupied = (*occupied) & (~((__uint128_t)1 << move.first));
+}
+
+void unMakeMove(__uint128_t *occupied, std::pair<int,int> move){
+  //set the old space bit
+  *occupied = (*occupied) | ((__uint128_t)1 << move.first);
+  //unset the new space bit
+  *occupied = (*occupied) & (~(__uint128_t)1 << move.second);
+}

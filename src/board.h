@@ -52,3 +52,9 @@ void makeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos);
 
 //change the "occupied" bitboard and piece pos back after calling makeMove() and exploring tree
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos);
+
+// change the "occipied" bitboard and piece pos to represent the new position
+void makeMove(__uint128_t *occupied, std::pair<int,int> move);
+
+//change the "occupied" bitboard and piece pos back after calling makeMove() and exploring tree
+void unMakeMove(__uint128_t *occupied, std::pair<int,int> move);

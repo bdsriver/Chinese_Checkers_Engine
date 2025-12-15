@@ -1,6 +1,7 @@
 #include <iostream>
 #include "board.h"
 #include "transpositionTable.h"
+#include "eval.h"
 #include <unordered_map>
 #include <vector>
 #include <utility>
@@ -22,6 +23,9 @@ int main(){
   int myPiece = 111;
   makeMove(&occupied,myMoves[0],&myPiece);
   unMakeMove(&occupied,myMoves[0],&myPiece);
+
+  std::vector<std::vector<int>> pieces = startPoints;
+  std::cout << eval(pieces, 0,0) << std::endl;
   
 
 }
