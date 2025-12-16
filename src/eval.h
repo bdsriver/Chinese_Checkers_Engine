@@ -2,16 +2,20 @@
 
 #include <vector>
 #include <utility>
+#include <deque>
 
 #define MAX_DEPTH 6
 
-//Store an evaluation for the turn player and best move
+//Store an evaluation for the turn player and best move, and history of best moves
 struct SearchResult{
   float eval;
   //best move at the position
   std::pair<int,int> bestMove;
+  //history of moves with next best move at front
+  std::deque<std::pair<int,int>> hist;
 
-  SearchResult(std::pair<int,int> _move, float _eval) : bestMove(_move), eval(_eval) {};
+  SearchResult(std::pair<int,int> _move, float _eval, std::deque<std::pair<int,int>> _hist) : 
+  bestMove(_move), eval(_eval), hist(_hist) {};
 };
 
 // currturn corresponds to the player whose turn it is to move. Assume 0 goes, then 1, then 2...
@@ -23,7 +27,7 @@ struct SearchNode
   int depth;
 
   SearchNode(float _a, float _B, float _e, int _startPlayer, int _currTurn, int _depth) :
-  alpha(_a), beta(_B), startPlayer(_startPlayer), currTurn(_currTurn), depth(_depth) {};
+  alpha(_a), beta(_B), eval(_e), startPlayer(_startPlayer), currTurn(_currTurn), depth(_depth) {};
 };
 
 struct Move{
@@ -47,7 +51,7 @@ struct Move{
 */
 SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node);
 
-float eval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer);
+float posEval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer);
 
 float moveVal(Move m);
 

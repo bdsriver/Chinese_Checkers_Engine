@@ -1,6 +1,8 @@
 #include "eval.h"
 #include "transpositionTable.h"
 #include <algorithm>
+#include <deque>
+#include <vector>
 
 
 SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node){
@@ -19,14 +21,17 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
 
   if (node.depth == 0){
     //return optimal eval
-    return SearchResult(sorted_moves.back().move, node.eval + moveVal(sorted_moves.back()));
+    return SearchResult(sorted_moves.back().move, node.eval + moveVal(sorted_moves.back()),
+    std::deque<std::pair<int,int>>({sorted_moves.back().move}));
   }
   //search all possible moves and prune if possible  
+  int searchTurn = node.currTurn;
   if (isStartPlayer){// max node
     //evaluate the child
     //update alpha
     // prune if alpha >= beta
-    Move bestMove = Move(sorted_moves.back().move,true,node.currTurn);
+    Move bestMove = Move(sorted_moves.back().move,true,searchTurn);
+    std::deque<std::pair<int,int>> bestHist;
     float value = -500.0;
     
     SearchNode n = SearchNode(node.alpha,node.beta,node.eval,node.startPlayer,
@@ -35,18 +40,26 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       Move currMove = sorted_moves.back();
       sorted_moves.pop_back();
       makeMove(board, currMove.move);
-      SearchResult r = Search(board,pieces,node);
+      makeMove(&(*pieces)[searchTurn], currMove.move);
+      float m_val = moveVal(currMove);
+      n.eval += m_val;
+      SearchResult r = Search(board,pieces,n);
       if (r.eval > value){
         value = r.eval;
         bestMove = currMove;
+        bestHist = r.hist;
       }
-      value = std::max(n.alpha, value);
+      n.alpha = std::max(n.alpha, value);
       unMakeMove(board, currMove.move);
+      unMakeMove(&(*pieces)[searchTurn], currMove.move);
+      n.eval -= m_val;
     }
-    return SearchResult(bestMove.move,value);    
+    bestHist.push_front(bestMove.move);
+    return SearchResult(bestMove.move,value,bestHist);    
   }
   else{//min node
-    Move bestMove = Move(sorted_moves.back().move,true,node.currTurn);
+    Move bestMove = Move(sorted_moves.back().move,true,searchTurn);
+    std::deque<std::pair<int,int>> bestHist;
     float value = 500.0;
     SearchNode n = SearchNode(node.alpha,node.beta,node.eval,node.startPlayer,
     (node.currTurn+1)%numPlayers,node.depth-1);
@@ -54,20 +67,27 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       Move currMove = sorted_moves.back();
       sorted_moves.pop_back();
       makeMove(board, currMove.move);
-      SearchResult r = Search(board,pieces,node);
+      makeMove(&(*pieces)[searchTurn], currMove.move);
+      float m_val = moveVal(currMove);
+      n.eval += m_val;
+      SearchResult r = Search(board,pieces,n);
       if (r.eval < value){
         value = r.eval;
         bestMove = currMove;
+        bestHist = r.hist;
       }
-      value = std::min(n.alpha, value);
+      n.beta = std::min(n.beta, value);
       unMakeMove(board, currMove.move);
+      unMakeMove(&(*pieces)[searchTurn], currMove.move);
+      n.eval -= m_val;
     }
-    return SearchResult(bestMove.move,value);
+    bestHist.push_front(bestMove.move);
+    return SearchResult(bestMove.move,value,bestHist);
   }
   
 }
 
-float eval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer){
+float posEval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer){
   int numPlayers = PLAYER_AMOUNT;
   float total = 0;
   for (int i=0;i<numPlayers; i++){
@@ -85,8 +105,8 @@ float eval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer){
 
 float moveVal(Move m){
   float val = 0;
-  val -= pieceValues[m.playerNum][m.move.first];
-  val += pieceValues[m.playerNum][m.move.second];
+  val += pieceValues[m.playerNum][m.move.first];
+  val -= pieceValues[m.playerNum][m.move.second];
   if (!m.isStartPlayer){
     val = val / (- (PLAYER_AMOUNT-1));
   }

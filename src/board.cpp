@@ -441,7 +441,6 @@ void makeMove(__uint128_t *occupied, std::pair<int,int> move){
   *occupied = (*occupied) | ((__uint128_t)1 << move.second);
   //unset the old space bit
   *occupied = (*occupied) & ~(((__uint128_t)1 << move.first));
-  int x = 0;
 }
 
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move){
@@ -449,7 +448,6 @@ void unMakeMove(__uint128_t *occupied, std::pair<int,int> move){
   *occupied = (*occupied) | ((__uint128_t)1 << move.first);
   //unset the new space bit
   *occupied = (*occupied) & ~((__uint128_t)1 << move.second);
-  int x = 0;
 }
 
 std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pieces){
