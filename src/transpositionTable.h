@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <utility>
 #include <array>
+#include <mutex>
 #include "board.h"
 
 #define MAX_CACHE 50000
@@ -28,6 +29,7 @@ private:
   std::array<__uint64_t,MAX_CACHE> hashes = {};
   int cacheSize;
   int maxCacheSize;
+  mutable std::mutex mtx;
 
 public:
   //return TableEntry where valid==false if the entry is not in the table 

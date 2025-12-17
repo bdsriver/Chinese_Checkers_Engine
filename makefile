@@ -3,4 +3,4 @@ run:
 	./a.out
 
 build:
-	g++ -std=c++23 -g src/*.cpp -o main
+	g++ -std=c++23 -g src/*.cpp 

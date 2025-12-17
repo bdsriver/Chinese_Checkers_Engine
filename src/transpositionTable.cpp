@@ -2,6 +2,7 @@
 #include "board.h"
 #include <random>
 #include <cstdint>
+#include <mutex>
 
 std::uint64_t pieceHashValue[PLAYER_AMOUNT][SPACE_AMOUNT];
 
@@ -64,6 +65,7 @@ namespace Hash{
 }
 
 TableEntry TranspositionTable::lookup(std::uint64_t hash, int search_depth){
+  std::lock_guard<std::mutex> lock(mtx);
   if(cache.contains(hash) &&  cache[hash].depth >= search_depth){
     return cache[hash];
   }
@@ -71,6 +73,7 @@ TableEntry TranspositionTable::lookup(std::uint64_t hash, int search_depth){
 }
 
 void TranspositionTable::insertEntry(std::uint64_t hash, TableEntry t){
+  std::lock_guard<std::mutex> lock(mtx);
   if(cache.contains(hash)){
     if (cache[hash].depth < t.depth){
       cache[hash] = t;
