@@ -4,11 +4,7 @@ import matplotlib.pyplot as plt
 # CSV files and corresponding number of CPU cores
 files = {
     "new_results1.csv": 1,
-    "new_results2.csv": 2,
-    "new_results4.csv": 4,
     "new_results8.csv": 8,
-    "new_results16.csv": 16,
-    "new_results32.csv": 32,
 }
 
 depths = {}
