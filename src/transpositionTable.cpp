@@ -65,25 +65,23 @@ namespace Hash{
 }
 
 TableEntry TranspositionTable::lookup(std::uint64_t hash, int search_depth){
-  std::lock_guard<std::mutex> lock(mtx);
-  if(cache.contains(hash) &&  cache[hash].depth >= search_depth){
-    return cache[hash];
+  size_t index = hash & tableSizeMask;
+  TableEntry e = table[index];
+  if(e.valid && e.hash == hash && e.depth >= search_depth){
+    return e;
   }
   return TableEntry(false);
 }
 
 void TranspositionTable::insertEntry(std::uint64_t hash, TableEntry t){
-  std::lock_guard<std::mutex> lock(mtx);
-  if(cache.contains(hash)){
-    if (cache[hash].depth < t.depth){
-      cache[hash] = t;
-    }
-  }
-  else if (cacheSize < maxCacheSize){
-    hashes[cacheSize] = hash;
-    cacheSize++;
-    cache[hash] = t;
-  }
+  size_t index = hash & tableSizeMask;
+  //use pointer for speed
+  TableEntry* e = &table[index];
+  if(!e->valid || e->depth <= t.depth){
+    t.hash = hash;
+    table[index] = t;
+  }/*
+  TODO: Change this to buckets
   else {
     //pick 3 random entries and kick one out
     int entries[3] = {rand()%maxCacheSize, rand()%maxCacheSize, rand()%maxCacheSize};
@@ -100,5 +98,6 @@ void TranspositionTable::insertEntry(std::uint64_t hash, TableEntry t){
     hashes[entries[kickedOut]] = hash;
     cache[hash] = t;
   }
+  */
   return;  
 }

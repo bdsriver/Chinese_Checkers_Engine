@@ -12,6 +12,7 @@
 struct TableEntry{
   //This represents the depth of the search performed. If you searched 4 levels after, depth=4
   uint8_t depth;
+  uint64_t hash;
   //Best move at this position
   std::pair<int,int> bestMove;
   bool valid;
@@ -25,13 +26,21 @@ struct TableEntry{
 
 class TranspositionTable{
 protected:
-  std::unordered_map<std::uint64_t, TableEntry> cache;
-  std::array<__uint64_t,MAX_CACHE> hashes = {};
-  int cacheSize;
-  int maxCacheSize;
-  mutable std::mutex mtx;
+  std::vector<TableEntry> table;
+  size_t tableSizeMask;
 
 public:
+
+  TranspositionTable(size_t sizeInMB = 64) {
+    size_t entries = (sizeInMB * 1024 * 1024) / sizeof(TableEntry);
+    //round to power of 2 for fast modulo
+    // x % 2^n == x & (2^n-1) is always true
+    size_t tableSize = 1;
+    while (tableSize < entries) tableSize <<= 1;
+    
+    table.resize(tableSize);
+    tableSizeMask = tableSize - 1;
+  }
   //return TableEntry where valid==false if the entry is not in the table 
   //or if it needs to be updated because search_depth > TableEntry.depth
   TableEntry lookup(std::uint64_t hash, int search_depth);
@@ -39,9 +48,6 @@ public:
   //update entry if it already exists
   //if it doesn't exist, find one to kick out if table is full
   void insertEntry(std::uint64_t hash, TableEntry t);
-
-  TranspositionTable() {maxCacheSize=MAX_CACHE; cacheSize=0; }
-  TranspositionTable(int max_cache_size) : maxCacheSize(max_cache_size) {cacheSize=0;}
 };
 
 
