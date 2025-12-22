@@ -99,6 +99,8 @@ For our heuristics, we use a "piece table", or a tables that say the value of a 
 
 ![Index labels of each space in the Board](./Images/piece_table.png)
 
+If we want to know the value of a specific move, we can take the difference between the value of the space the piece moved from and the space it moved to. This is a measure of how much closer it is to the goal.
+
 # Pessimistic Alpha-Beta Minimax Search
 
 # Transposition Table
