@@ -85,9 +85,19 @@ Checking if a bit of the hashmap is set: ```hashmap AND (1 << bit_num)``` is 0 i
 
 Similar to generating the one-space moves from earlier, to generate the possible empty spaces we can jump to from a space, we use a bitwise operation, ```jumps[space_num] AND (NOT occupied)```, and the resulting set bits are empty spaces 2 units in any direction. We also need to check if the space that we jump over is occupied. To do this, we use the Half Jumps map from earlier. We use the map to determine what the space in between the two spaces is and check if that space is occupied. For example, if we want to jump from space 3 to space 14 because 14 is unoccupied, we need to know if space 6 is occupied. We would use the map like this to know that we have to check bit 6: ``` bit_num = HalfJumps[3][14]```. Since bit_num is 6, we check if bit 6 of ```occupied``` is set or not to know if we can jump.
 
-# Win Conditions and Heuristics
+# Win Conditions
 
-We use precomputed tables to define the win conditions, as well as create our heuristic (piece value) tables...TODO
+In Chinese Checkers, you win when all of your pieces are in the opposite zone of where they started. In this example, the green player wants to move their pieces into the blue zone, the red player wants to move their pieces into the red zone, etc.
+
+![Index labels of each space in the Board](./Images/bitmap_compass.png)
+
+To check if a player has won the game, all we need to do is check that their pieces are in the predefined regions we set as the "end zones" or "goal".
+
+# Heuristics
+
+For our heuristics, we use a "piece table", or a tables that say the value of a piece when it is at a specific spot. We define the heuristic as the distance from its current spot to its end zone or goal. This can either be hardcoded or defined at startup. We use [Djikstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra's_algorithm) to calculate this. This table needs to be defined for each player because they have separate goals. In this example, this is what the piece table looks like for the green player who wants to get all of their pieces into the zone currently occupied by the blue pieces:
+
+![Index labels of each space in the Board](./Images/piece_table.png)
 
 # Pessimistic Alpha-Beta Minimax Search
 
