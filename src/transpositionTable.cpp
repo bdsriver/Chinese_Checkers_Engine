@@ -39,10 +39,10 @@ namespace Hash{
     *hash ^= playerHashValue[newPlayer];
   }
 
-  std::uint64_t initHash(std::vector<__uint128_t> pieces, int playerAmount){
+  std::uint64_t initHash(std::vector<__uint128_t> pieces, int playerAmount, int currTurn){
     std::uint64_t hash = 0;
     //set hash for player 0
-    hash ^= playerHashValue[0];
+    hash ^= playerHashValue[currTurn];
     //set hash for every piece on the board
     for (int i=0; i<playerAmount; i++){
       uint64_t low = (uint64_t)pieces[i];
