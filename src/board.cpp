@@ -501,3 +501,29 @@ std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pi
   }
   return newPieces;
 }
+
+void printBitboard(std::vector<__uint128_t> pieces){
+  char printArr[17][17];
+  for (int i=0; i<17; i++){
+    for (int j=0; j<17; j++){
+      printArr[i][j] = ' ';
+    }
+  }
+  for (int i=0; i<playersInGame; i++){
+    uint64_t low = (uint64_t)pieces[i];
+    uint64_t high = (uint64_t)(pieces[i] >> 64);
+    while (low){
+      int trailing_zeros = __builtin_ctzll(low);//supported by gcc
+      low &= low-1; //clear that set bit
+      std::pair<int,int> ind = bitToIndices[trailing_zeros];
+      printArr[ind.second][ind.first] = i;
+    }
+    while (high){
+      int trailing_zeros = __builtin_ctzll(high)+64;//add 64 for high address
+      high &= high-1;
+      std::pair<int,int> ind = bitToIndices[trailing_zeros];
+      printArr[ind.second][ind.first] = i;
+    }
+  }
+  printBoard(printArr);
+}
