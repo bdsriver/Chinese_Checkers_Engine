@@ -109,17 +109,25 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
   
 }
 
-float posEval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer){
+float posEval(std::vector<__uint128_t> pieces, int currTurn){
   float total = 0;
   for (int i=0;i<playersInGame; i++){
-    float subtotal = 0;
-    for (int p:pieces[i]){
-      float val = pieceValues[i][p];
-      val = (i==startPlayer) ? val : (-val) / (float)(playersInGame-1);
-      subtotal += val;
+    uint64_t low = (uint64_t)pieces[i];
+    uint64_t high = (uint64_t)(pieces[i] >> 64);
+    while (low){
+      int trailing_zeros = __builtin_ctzll(low);//supported by gcc
+      low &= low-1; //clear that set bit
+      float val = pieceValues[i][trailing_zeros];
+      val = (i==currTurn) ? -val : (val) / (float)(playersInGame-1);
+      total += val;
     }
-    total += subtotal;
-    
+    while (high){
+      int trailing_zeros = __builtin_ctzll(high)+64;//add 64 for high address
+      high &= high-1;
+      float val = pieceValues[i][trailing_zeros];
+      val = (i==currTurn) ? -val : (val) / (float)(playersInGame-1);
+      total += val;
+    }
   }
   return total;
 }
@@ -141,3 +149,5 @@ bool operator<(Move m1,Move m2){
   //This makes it so that each player's best move is at the end
   return v1 > v2;
 }
+
+SearchResult ignorantSearch(__uint128_t *board, __uint128_t pieces, int player);

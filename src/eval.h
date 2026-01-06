@@ -8,12 +8,11 @@
 
 #define MAX_DEPTH 6
 
-//Store an evaluation for the turn player and best move, and history of best moves
+//Store an evaluation for the turn player and best move, and if the player has won
 struct SearchResult{
   float eval;
   //best move at the position
   std::pair<int,int> bestMove;
-  //history of moves with next best move at front
   bool end;
 
   SearchResult(std::pair<int,int> _move, float _eval) : 
@@ -56,7 +55,7 @@ struct Move{
 */
 SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table);
 
-float posEval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer);
+float posEval(std::vector<__uint128_t> pieces, int currTurn);
 
 float moveVal(Move m);
 
