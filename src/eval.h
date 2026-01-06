@@ -55,8 +55,12 @@ struct Move{
 */
 SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table);
 
+SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode node,TranspositionTable* table);
+
 float posEval(std::vector<__uint128_t> pieces, int currTurn);
 
 float moveVal(Move m);
+
+float moveVal(std::pair<int,int> move, int playerNum, bool isStartPlayer);
 
 bool operator<(Move m1,Move m2);

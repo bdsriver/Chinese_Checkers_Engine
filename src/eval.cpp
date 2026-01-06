@@ -142,6 +142,16 @@ float moveVal(Move m){
   return val;
 }
 
+float moveVal(std::pair<int,int> move, int playerNum, bool isStartPlayer){
+  float val = 0;
+  val += pieceValues[playerNum][move.first];
+  val -= pieceValues[playerNum][move.second];
+  if (!isStartPlayer){
+    val = val / (- (playersInGame-1));
+  }
+  return val;
+}
+
 bool operator<(Move m1,Move m2){
   float v1, v2;
   v1 = pieceValues[m1.playerNum][m1.move.second] - pieceValues[m1.playerNum][m1.move.first];
@@ -150,4 +160,73 @@ bool operator<(Move m1,Move m2){
   return v1 > v2;
 }
 
-SearchResult ignorantSearch(__uint128_t *board, __uint128_t pieces, int player);
+SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode node,
+ TranspositionTable* table)
+{
+  //check table
+  TableEntry t = table->lookup(node.hash,node.depth);
+  if (t.valid){
+    return SearchResult(t.bestMove,t.eval);
+  }
+
+  std::pair<int,int> move_spots[MAX_MOVES];
+  int moveAmount = generateMoves(move_spots,*board,*pieces,node.currTurn);
+  if (moveAmount == -1){
+    //this means this is a winning position
+    return SearchResult(true);
+  }
+
+
+  if (node.depth == 0){
+    //find best value move out of current options
+    std::pair <int,int> bestMove = move_spots[0];
+    float bestVal = moveVal(bestMove, node.currTurn, true);
+    for(int i=1; i<moveAmount; i++){
+      float compVal = moveVal(move_spots[i],node.currTurn,true);
+      if (bestVal < compVal){
+        bestMove = move_spots[i];
+        bestVal = compVal;
+      }
+    }
+
+    float e = node.eval + bestVal;
+    table->insertEntry(node.hash, TableEntry(node.depth,e,bestMove));
+    //return optimal eval
+    return SearchResult(bestMove, e);
+  }
+
+  //find best option among all possible moves
+  int back = moveAmount-1;
+  std::pair<int,int> bestMove;
+  float bestEval = -500;
+  node.depth -= 1;
+  while(back){
+    std::pair<int,int> currMove = move_spots[back];
+    back--;
+
+    makeMove(board,currMove);
+    makeMove(pieces,currMove);
+    Hash::hashMove(&(node.hash), node.currTurn, currMove);
+    float tempEval = moveVal(currMove,node.currTurn, true);
+    node.eval += tempEval;
+
+    SearchResult r = ignorantSearch(board, pieces, node, table);
+
+    node.eval -= tempEval;
+    Hash::hashMove(&(node.hash), node.currTurn, currMove);
+    unMakeMove(pieces, currMove);
+    unMakeMove(board, currMove);
+
+    //check if we reach a winning position from here
+    if (r.end){
+      return SearchResult(currMove, 500);
+    }
+
+    if (r.eval > bestEval){
+      bestEval = r.eval;
+      bestMove = currMove;
+    }
+  }
+
+  return SearchResult(bestMove,bestEval);
+}
