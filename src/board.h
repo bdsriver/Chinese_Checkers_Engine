@@ -68,4 +68,7 @@ void printBoard(char board[][17]);
 //generate a bitboard for pices of each player's pieces
 std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pieces);
 
+//generate a bitboard for if a space on the board is occupied
+__uint128_t pieceVectorToBoard(std::vector<std::vector<int>> pieces);
+
 void printBitboard(std::vector<__uint128_t> pieces);

@@ -220,9 +220,12 @@ void setMovesAndJumps(int playerAmount){
     queue.push_back({});    
     for (int j=0; j<10; j++){
       explored[i] = setBit(explored[i], endZones[i][j]);
-      pieceValues[i][endZones[i][j]] = 0;
       if (j<4){
         queue[i].push_back(endZones[i][j]);
+        pieceValues[i][endZones[i][j]] = 0;
+      }
+      else{
+        pieceValues[i][endZones[i][j]] = -1;
       }
     }
   }
@@ -370,14 +373,12 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
     jumpPoints[0] = startPos;
     int back = 0;
     // "hashmap" to check if we already jumped to a spot
-    __uint128_t jumpedTo = 0; 
+    __uint128_t jumpedTo = setBit(0,startPos); 
 
 
     while (back >= 0) {
       int startSpace = jumpPoints[back];
       back--;
-      //set the hash
-      jumpedTo = setBit(jumpedTo,startSpace);
 
       //add all possible jumps to stack
       //first compute jumps and then check if their intermediate space is occupied to verify
@@ -392,6 +393,8 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
           moveAmount++;
           back++;
           jumpPoints[back] = trailing_zeros;
+          //set the hash
+          jumpedTo = setBit(jumpedTo, trailing_zeros);
         }        
       }
       while (high){
@@ -403,6 +406,7 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
           moveAmount++;
           back++;
           jumpPoints[back] = trailing_zeros;
+          jumpedTo = setBit(jumpedTo,trailing_zeros);
         }
       }
     }//end while loop
@@ -500,6 +504,15 @@ std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pi
     newPieces.push_back(bitboard);
   }
   return newPieces;
+}
+
+__uint128_t pieceVectorToBoard(std::vector<std::vector<int>> pieces){
+  std::vector<__uint128_t> bitboards = pieceVectorToBitboards(pieces);
+  __uint128_t board = 0;
+  for (int i=0; i<bitboards.size(); i++){
+    board |= bitboards[i];
+  }
+  return board;
 }
 
 void printBitboard(std::vector<__uint128_t> pieces){
