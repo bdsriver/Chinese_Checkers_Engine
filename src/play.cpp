@@ -35,6 +35,7 @@ void play(){
 
     if (command == "board"){
       printBitboard(pieces);
+      std::cout << "Turn Player: " << currTurn << std::endl;
     }
     else if (command == "restart"){
       std::string amountString;
