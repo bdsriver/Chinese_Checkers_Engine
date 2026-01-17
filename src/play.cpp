@@ -14,7 +14,6 @@
 void play(){
   std::string input;
 
-  srand(time(nullptr));
   setMovesAndJumps(6);
   Hash::initPieceVals(pieceHashValue);
   Hash::initPlayerVals(playerHashValue);
@@ -139,9 +138,9 @@ void play(){
       Hash::hashMove(&hash, currTurn, myMove);
       Hash::hashTurn(&hash, currTurn, nextPlayer);
 
-      if (currTurn != nextPlayer){
-        table = TranspositionTable();
-      }
+      
+      table = TranspositionTable();
+      
       currTurn = nextPlayer;
 
       printBitboard(pieces);
