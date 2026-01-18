@@ -266,8 +266,8 @@ int generateMoves(std::pair<uint8_t,uint8_t> moveArr[MAX_MOVES],__uint128_t occu
   int pieceLocations[PLAYER_PIECE_AMOUNT];
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
     int startPos = 0;
-    if((__uint64_t)temp){
-      startPos = __builtin_ctzll((__uint64_t)temp);
+    if((uint64_t)temp){
+      startPos = __builtin_ctzll((uint64_t)temp);
     }
     else{
       startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
@@ -310,8 +310,8 @@ int generateMoves(std::pair<uint8_t,uint8_t> moveArr[MAX_MOVES],__uint128_t occu
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
     //start with a point to jump from being your current spot and add new points
     int startPos;
-    if((__uint64_t)temp){
-      startPos = __builtin_ctzll((__uint64_t)temp);
+    if((uint64_t)temp){
+      startPos = __builtin_ctzll((uint64_t)temp);
     }
     else{
       startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
