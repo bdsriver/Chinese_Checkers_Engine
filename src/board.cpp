@@ -453,9 +453,6 @@ __uint128_t jumpedTo){
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
     return (n | ((__uint128_t)1 << bit));
   };
-  auto unsetBit = [](__uint128_t n, int bit) -> __uint128_t {
-    return (n & (~((__uint128_t)1 << bit)));
-  };
   auto bitIsSet = [](__uint128_t n, int bit) -> bool {
     return (n & ((__uint128_t)1 << bit) ) ;
   };
