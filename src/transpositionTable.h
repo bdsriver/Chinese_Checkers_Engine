@@ -64,7 +64,7 @@ namespace Hash{
   void initPlayerVals(std::uint64_t playerValArr[MAX_PLAYER_AMOUNT]);
   void hashMove(std::uint64_t* hash,int player, std::pair<int,int> move);
   void hashTurn(std::uint64_t* hash, int oldPlayer, int newPlayer);
-  //return the hash of the initial game state with it being player 0's turn
+  //return the hash of the game state
   std::uint64_t initHash(std::vector<__uint128_t> pieces, int playerAmount, int currTurn=0);
   //Generate a random 64 bit int
   std::uint64_t genRandom();
