@@ -523,3 +523,15 @@ __uint128_t jumpedTo){
 
   return -1;
 }
+
+bool playerIsDone(int player, __uint128_t pieces){
+  //check if the player is done. check if each bit of the endzone is set
+  bool done = true;
+  for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
+    if (!(pieces & ((__uint128_t)1 << endZones[player][i])) ){
+      done = false;
+      break;
+    }
+  }
+  return done;
+}
