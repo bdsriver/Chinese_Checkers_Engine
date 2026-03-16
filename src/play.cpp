@@ -79,7 +79,7 @@ void play(){
       }
       std::cout << "Searching at depth " << depth << ':' << std::endl;
 
-      SearchNode n = SearchNode(-500, 500, posEval(pieces,currTurn), currTurn, currTurn, depth, hash);
+      SearchNode n = SearchNode(-500, 500, posEval(&pieces,currTurn), currTurn, currTurn, depth, hash);
       
       auto start = std::chrono::high_resolution_clock::now();
       SearchResult r = ignorantSearch(&occupied, &pieces[currTurn], n, &table);

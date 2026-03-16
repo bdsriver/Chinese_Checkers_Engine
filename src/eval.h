@@ -60,7 +60,7 @@ struct Move{
 
 SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode node,TranspositionTable* table);
 
-float posEval(std::vector<__uint128_t> pieces, int currTurn);
+float posEval(std::vector<__uint128_t>* pieces, int currTurn);
 
 float moveVal(Move m);
 

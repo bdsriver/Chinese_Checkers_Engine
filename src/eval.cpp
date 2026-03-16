@@ -111,11 +111,11 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
   
 }*/
 
-float posEval(std::vector<__uint128_t> pieces, int currTurn){
+float posEval(std::vector<__uint128_t>* pieces, int currTurn){
   float total = 0;
   for (int i=0;i<playersInGame; i++){
-    uint64_t low = (uint64_t)pieces[i];
-    uint64_t high = (uint64_t)(pieces[i] >> 64);
+    uint64_t low = (uint64_t)pieces->at(i);
+    uint64_t high = (uint64_t)(pieces->at(i) >> 64);
     while (low){
       int trailing_zeros = __builtin_ctzll(low);//supported by gcc
       low &= low-1; //clear that set bit
