@@ -122,6 +122,9 @@ void engineLoop(){
     std::vector<__uint128_t> pieces;
 
     getline(std::cin, input);
+    if (!std::cin.good()) {
+      return;
+    }
     if (input == "quit"){
       continue;
     }
@@ -143,7 +146,7 @@ void engineLoop(){
     
     makeMove(&(pieces[currTurn]), r.bestMove);
     printBoardState(currTurn, &pieces);
-    
+
   }
 
 }
