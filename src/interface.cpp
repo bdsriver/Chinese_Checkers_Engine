@@ -8,6 +8,7 @@
 #include "board.h"
 #include "eval.h"
 #include "transpositionTable.h"
+#include "bots.h"
 
 bool getBoardFromString(std::string input, __uint128_t* board, std::vector<__uint128_t>* pieces,
   int* startPlayerAmount, int* currPlayerAmount, int* currentPlayer, std::string* difficulty, std::string* errorMsg){
@@ -138,8 +139,8 @@ void engineLoop(){
     setMovesAndJumps(startPlayers);
     hash = Hash::initHash(pieces, playersInGame, currTurn);
     
-    // CHANGE THIS TO IMPLEMENT BOT DIFFICULTY
-    int depth = 2;
+    
+    int depth = depthForDifficulty(difficulty);
     SearchNode n = SearchNode(-500, 500, 0, currTurn, currTurn, depth, hash);
     TranspositionTable t = TranspositionTable();
     SearchResult r = ignorantSearch(&board, &(pieces[currTurn]),n, &t);
